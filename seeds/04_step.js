@@ -13,6 +13,3 @@ exports.seed = function(knex, Promise) {
       ]);
     });
 };
-
-
-author_id: knex('author').where('name','JesuChristo').select('id')},

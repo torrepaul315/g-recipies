@@ -1,10 +1,10 @@
 
 exports.seed = function(knex, Promise) {
   // Deletes ALL existing entries
-  return knex('table_name').del()
+  return knex('review').del()
     .then(function () {
       // Inserts seed entries
-      return knex('table_name').insert([
+      return knex('review').insert([
         {body: 'this is without the best beef stew I"ve ever enjoyed! would use this recipe over and over',
         rating:5,
         recipe_id:knex('recipe').where('name','beef stew').select('id'),
