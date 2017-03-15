@@ -44,7 +44,7 @@ router.get('/recipe', (req,res,next) => {
       .join('review','recipe.id','=','review.recipe_id')
       .groupBy('recipe.id')
       .avg('review.rating').as('recipe.avg_rating')
-      // .as('review')
+      
       .select('recipe.*')
       // .orderBy('recipe.avg_rating')
       .then(reviews => {

@@ -24,7 +24,15 @@ exports.seed = function(knex, Promise) {
         {body: 'seed to figure out average rating',
         rating:1,
         recipe_id:knex('recipe').where('name','old swedish meatballs').select('id'),
-        author_id:knex('author').where('name','JesuChristo').select('id')}
+        author_id:knex('author').where('name','JesuChristo').select('id')},
+        {body: 'seed to figure out average rating',
+        rating:2,
+        recipe_id:knex('recipe').where('name','french fries').select('id'),
+        author_id:knex('author').where('name','JesuChristo').select('id')},
+        {body: 'seed to figure out average rating',
+        rating:3,
+        recipe_id:knex('recipe').where('name','french fries').select('id'),
+        author_id:knex('author').where('name','JesuChristo').select('id')},
       ]);
     });
 };
