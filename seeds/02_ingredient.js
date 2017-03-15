@@ -7,7 +7,11 @@ exports.seed = function(knex, Promise) {
       return knex('ingredient').insert([
         {name: 'carrots'},
         {name: 'onion'},
-        {name: 'meat'}
+        {name: 'meat'},
+        {name: 'potatos'},
+        {name: 'celery'},
+        {name: 'cabbage'},
+        {name: 'chicken'},
       ]);
     });
 };
