@@ -4,6 +4,7 @@ exports.up = function(knex, Promise) {
   table.increments('id').primary();
   table.string('name');
   table.text('image');
+  table.text('description');
   table.integer('author_id').references('id').inTable('author');
   table.timestamp('recipe_timestamp').defaultTo(knex.fn.now());
   });
