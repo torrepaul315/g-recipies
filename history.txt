@@ -4232,3 +4232,58 @@
  4232  knex migrate:latest
  4233  knex seed:run
  4234  nodemon
+ 4235  history > history.txt
+ 4236  http GET localhost:3140/recipe
+ 4237  psql
+ 4238  http GET localhost:3140/recipe
+ 4239* git add .
+ 4240* git commit -m 'got a route working'
+ 4241* psql
+ 4242* knex migrate:rollback
+ 4243* knex migrate:latest
+ 4244* knex seed:run
+ 4245* nodemon
+ 4246  http GET localhost:3140/recipe
+ 4247  http GET localhost:3140/recipes
+ 4248  http GET localhost:3140/recipes/2
+ 4249  http GET localhost:3140/recipes/1
+ 4250  http GET localhost:3140/recipes/3
+ 4251  http GET localhost:3140/recipe
+ 4252* nodemon
+ 4253  localhost:3140/recipe name='fred'
+ 4254  POST localhost:3140/recipe name='fred'
+ 4255  http POST localhost:3140/recipe name='fred'
+ 4256* psql
+ 4257* knex migrate:rollback
+ 4258* knex migrate:latest
+ 4259* knex seed:run
+ 4260* nodemon
+ 4261* git status
+ 4262* git add .
+ 4263* git commit -m 'work as of wednesday morning'
+ 4264* git push 
+ 4265* heroku pg:info
+ 4266* git push heroku master 
+ 4267* heroku open
+ 4268* heroku run knex migrate:rollback
+ 4269* heroku run knex migrate:latest
+ 4270* heroku run knex seed:run
+ 4271* npm install cors --save
+ 4272* git add .
+ 4273* git commit -m 'added cors'
+ 4274* git push
+ 4275* git push heroku master
+ 4276* nodemon
+ 4277  knex migrate:rollback
+ 4278  knex migrate:latest
+ 4279  knex migrate:rollback
+ 4280  knex migrate:latest
+ 4281  knex seed:run
+ 4282  git add .
+ 4283  git commit -m 'progress post work'
+ 4284  git push
+ 4285  git push heroku master
+ 4286  heroku run knex migrate:rollback
+ 4287  heroku run knex migrate:latest
+ 4288  heroku run knex seed:run
+ 4289* nodemon

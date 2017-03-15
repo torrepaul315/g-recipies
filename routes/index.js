@@ -70,6 +70,7 @@ router.get('/recipeAvgReviewScore/:id', (req, res, next) => {
 
 
   .then(reviews => {
+    reviews.push({'recipe_id':req.params.id});
     res.send(reviews)
   }).catch(err => {
     res.status(503).send(err.message)
@@ -165,6 +166,39 @@ router.get('/indivRecipeIngred/:id',
 
 
 
+//
+// router.put
+router.post('/review', (req,res,next) => {
+  // console.log(req.body);
+  knex('author').where('name', req.body.name).select('name')
+    .then(user => {
+      console.log(user[0].name);
+      if (!user) {
+        return knex('author')
+          .returning('id')
+          .insert({name: req.body.name,
+          })
+      }
+    })
+    .then((authorIds) => {
+      console.log(authorIds)
+      // authorIds[0]
+
+    })
+    .then(authorId => {
+    knex('review').insert({
+      body:req.body.body,
+      rating:req.body.rating,
+      recipe_id:req.body.recipe_id,
+      author_id:authorId,
+    }).then(newReview => {
+      // var author = knex('author').where('name', req.body.name);
+      res.status(200).send(newReview)
+    }).catch(err => {
+      res.status(503).send(err.message)
+    })
+  })
+})
 
 
 
@@ -202,9 +236,6 @@ router.post('/recipe', (req,res,next) =>{
       name:req.body.ingredient
     })
   })
-
-
-
   .then(reviews => {
     // var author = knex('author').where('name', req.body.name);
     res.status(200).send(reviews)
