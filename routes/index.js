@@ -15,60 +15,19 @@ var knex = require('../db/knex');
 //will need to change naming convention, but yeah
 
 
-//get all recipes (for first page)
-router.get('/recipe', (req,res, next) => {
-  knex.select('id','name','image').from('recipe')
-  .then(reviews => {
-    res.send(reviews)
-  }).catch(err => {
-    res.status(503).send(err.message)
-  })
-});
-//!!!
-
-
-router.get('/review', (req,res, next) => {
-  // knex.select('recipe_id', 'rating').from('review').
-  knex.select('recipe_id').from('review').groupBy('review.id')
-  // .avg('review.review')
-
-  .then(review => {
-
-
-
-      // knex().avg('rating').where('recipe_id',req.params.id)
-
-
-
-    res.send(review)
-  }).catch(err => {
-    res.status(503).send(err.message)
-  })
-});
-
-
-// as per isaac- !!!think about getting info, THEN doing more work on the result in the .then!
-router.get('/averagereview', (req,res, next) => {
-  knex('review').select('rating','recipe_id').orderBy('recipe_id')
-})
-
-
+// !!!!!home/index page! what we have might work, may need to do overhaul of the averaging one to provide an array object of all recipes and all review averages
+//gets all recipes (for first page)
+// router.get('/recipe', (req,res, next) => {
+//   knex.select('id','name','image').from('recipe')
+//   .then(reviews => {
+//     res.send(reviews)
+//   }).catch(err => {
+//     res.status(503).send(err.message)
+//   })
+// });
+//generates average review for each recipe
 router.get('/recipeAvgReviewScore/:id', (req, res, next) => {
-
   knex('review').avg('rating').where('recipe_id',req.params.id)
-
-
-
-//use a for each?
-  // this gives you back the rating field of the reviews
-  // knex.select('rating').table('review')
-
-
-  // knex('recipe')
-  // .join('review','recipe.id','=','review.recipe_id')
-  // .select('rating'
-
-
   .then(reviews => {
     reviews.push({'recipe_id':req.params.id});
     res.send(reviews)
@@ -77,22 +36,35 @@ router.get('/recipeAvgReviewScore/:id', (req, res, next) => {
   })
 });
 
-/*
-need to send back 1-
-object with all of the recipes
-2- an average rating for each recipe!
-avg — .avg(column)
-Retrieve the average of the values of a given column.
+//f
 
-knex('users').avg('age')
-Outputs:
-select avg(`age`) from `users`
-knex('users').avg('age as a')
-Outputs:
-select avg(`age`) as `a` from `users`
+router.get('/recipe', (req,res,next) => {
+    if(req.query.avgReview) {
+      knex('recipe')
+      .join('review','recipe.id','=','review.recipe_id')
+      .groupBy('recipe.id')
+      .avg('review.rating').as('recipe.avg_rating')
+      // .as('review')
+      .select('recipe.*')
+      // .orderBy('recipe.avg_rating')
+      .then(reviews => {
+        res.send(reviews)
+      }).catch(err => {
+        res.status(503).send(err.message)
+      })
+    }
+    else {
+      knex.select('id','name','image').from('recipe')
+      .then(reviews => {
+        res.send(reviews)
+      }).catch(err => {
+        res.status(503).send(err.message)
+      })
+    }
+})
 
-*/
-//this route gets the info from the recipe and author table for the individual recipe page
+/*  !!!!!!!individual recipe page!!!!!!!!!!   */
+
 router.get('/recipeAndAuthor/:id',(req,res,next) => {
 
     return knex('recipe')
@@ -128,10 +100,7 @@ router.get('/recipeAndAuthor/:id',(req,res,next) => {
     res.status(503).send(err.message)
   })
 });
-  // knex.select('name').from('author').where('id', 'recipe.id')
 
-
-//route to get indiv recipe steps for the indiv recipe page
 router.get('/indivRecipeSteps/:id',      (req,res,next) => {
   knex('step').select('step_number','step_body').where('recipe_id',req.params.id)
   .then(steps => {
@@ -140,8 +109,6 @@ router.get('/indivRecipeSteps/:id',      (req,res,next) => {
     res.status(503).send(err.message)
   })
 })
-
-//route to get ingredients for indiv recipe
 
 //!!! need to add in quantity!
 router.get('/indivRecipeIngred/:id',
@@ -158,6 +125,82 @@ router.get('/indivRecipeIngred/:id',
     res.status(503).send(err.message)
   })
 })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+router.get('/review', (req,res, next) => {
+  // knex.select('recipe_id', 'rating').from('review').
+  knex.select('recipe_id').from('review').groupBy('review.id')
+  // .avg('review.review')
+  .then(review => {
+      // knex().avg('rating').where('recipe_id',req.params.id)
+    res.send(review)
+  }).catch(err => {
+    res.status(503).send(err.message)
+  })
+});
+
+
+
+
+// as per isaac- !!!think about getting info, THEN doing more work on the result in the .then!
+router.get('/averagereview', (req,res, next) => {
+  knex('review').select('rating','recipe_id').orderBy('recipe_id')
+})
+
+
+
+
+
+
+//use a for each?
+  // this gives you back the rating field of the reviews
+  // knex.select('rating').table('review')
+
+
+  // knex('recipe')
+  // .join('review','recipe.id','=','review.recipe_id')
+  // .select('rating'
+
+
+
+/*
+need to send back 1-
+object with all of the recipes
+2- an average rating for each recipe!
+avg — .avg(column)
+Retrieve the average of the values of a given column.
+
+knex('users').avg('age')
+Outputs:
+select avg(`age`) from `users`
+knex('users').avg('age as a')
+Outputs:
+select avg(`age`) as `a` from `users`
+
+*/
+//this route gets the info from the recipe and author table for the individual recipe page
+
+  // knex.select('name').from('author').where('id', 'recipe.id')
+
+
+//route to get indiv recipe steps for the indiv recipe page
+
+
+//route to get ingredients for indiv recipe
+
+
 
 // .join('ingredient', 'ingredient_recipe.ingredient_id', '=','ingredient.id')
 // .where('recipe.id',req.params.id).select('*')
@@ -200,9 +243,15 @@ router.post('/review', (req,res,next) => {
   })
 })
 
+/*
+new recipe page- almost there!
+1- problem- this is set up to just take one step and one ingredient ergo
+a. should prolly split post into 2 separate requests, one for the one to ones and a second post to handle steps and ingredients
 
+2- this post does not add anything to the ingredient_recipe join table!
 
-
+3- this also does not take into account quanitity!
+*/
 router.post('/recipe', (req,res,next) =>{
   console.log(req.body);
    return knex('author').where('name', req.body.name).first()
