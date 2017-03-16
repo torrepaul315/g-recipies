@@ -223,8 +223,6 @@ router.post('/author', (req,res,next) =>{
     })
     .then((authorIds) => authorIds[0])
     .then(authorId => {
-
-      // res.send(reviews)
       res.json(authorId)
     })
     .catch(err => {
@@ -232,11 +230,73 @@ router.post('/author', (req,res,next) =>{
     })
 })
 
+router.post('/recipeAdd', (req,res,next) => {
 
+  knex('recipe').insert({
+    name:req.body.title,
+    image:req.body.image,
+    description:req.body.description,
+    author_id:req.body.author_id,
+  }).returning('id')
 
+    .then(newRecipe => {
+      console.log(newRecipe)
+      res.status(200).json(newRecipe[0])
+      // res.json(authorId)
+    })
+    .catch(err => {
+      res.status(503).send(err.message)
+    })
+})
 
+router.post('/stepAdd', (req,res,next) => {
+  var stepNumber = parseInt(req.body.step_number);
+  console.log(stepNumber);
+  var recipeId = parseInt(req.body.id);
+  console.log(recipeId);
+    knex('step').insert({
+      step_number:stepNumber,
+      step_body:req.body.step_body,
+      recipe_id:recipeId
+    })
+    .then((result) => {
+      res.status(200).send(result)
+    }).catch(err => {
+      res.status(503).send(err.message)
+    })
+});
+//args- quantity, fk ingred, fk recipe, name
+router.post('/ingredientAdd', (req,res,next) => {
+  console.log(req.body)
+  knex('ingredient').insert({
+    name: req.body.name,
+  })
+  .returning('id')
+  .then((ingredId) => ingredId[0])
+  .then((ingredId) => {
+    console.log(ingredId);
+    var recipeId = parseInt(req.body.id);
+    console.log(recipeId);
+    knex('ingredient_recipe').insert({
+      ingredient_id:ingredId,
+      recipe_id:recipeId,
+      quantity:req.body.quantity,
+    })
+    .then(success => {
+      return;
+    })
+    .catch(err => {
+      console.log(err);
+    })
+  })
+  .then((something) => {
+    res.status(200).json(something)
+  })
+  .catch(err => {
+    res.status(503).send(err.message)
+  })
 
-
+});
 
 
 router.post('/review', (req,res,next) => {
@@ -324,7 +384,15 @@ router.delete('/review/:id',
   })
 })
 
-
+// router.delete('/step/:id',
+// (req,res,next) => {
+//   knex('step').where('id',
+//   parseInt(req.params.id)).del()
+//   .then(())
+//
+//
+//
+// })
 
 
 
