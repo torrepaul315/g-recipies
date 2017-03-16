@@ -210,14 +210,37 @@ select avg(`age`) as `a` from `users`
 // .join('ingredient', 'ingredient_recipe.ingredient_id', '=','ingredient.id')
 // .where('recipe.id',req.params.id).select('*')
 
+router.post('/author', (req,res,next) =>{
+  knex('author').where('name', req.body.name).first()
+    .then(author => {
+      if (author) {
+        return [author.id];
+      } else {
+        return knex('author')
+          .returning('id')
+          .insert({name: req.body.name})
+      }
+    })
+    .then((authorIds) => authorIds[0])
+    .then(authorId => {
+
+      // res.send(reviews)
+      res.json(authorId)
+    })
+    .catch(err => {
+      res.status(503).send(err.message)
+    })
+})
 
 
 
 
-//the top part of this isn't working yet!
+
+
+
 
 router.post('/review', (req,res,next) => {
-  // console.log(req.body);
+  console.log(req.body);
   knex('author').where('name', req.body.name).select('name')
     .then(user => {
       console.log(user[0].name);
@@ -230,8 +253,6 @@ router.post('/review', (req,res,next) => {
     })
     .then((authorIds) => {
       console.log(authorIds)
-      // authorIds[0]
-
     })
     .then(authorId => {
     knex('review').insert({
@@ -256,54 +277,22 @@ a. should prolly split post into 2 separate requests, one for the one to ones an
 2- this post does not add anything to the ingredient_recipe join table!
 
 3- this also does not take into account quanitity!
+
+4- from isaac
+modularize your routes! no big honker of a post request
+
+do a 'post chain' ie
+one, have separate routes to insert into each basic table
+each route returns back to the front end
+you generally only want to insert into one table at a time!
+
+go to author- if exists great- send back author id.  if it doesn't exist, insert new author, send back id
+
+.returning
+so! work on using the author post route, using returning, and then sending back
+
+
 */
-router.post('/recipe', (req,res,next) =>{
-   //need to use the returning a.if the author doesn't exist and b. return the id (to be used as a foreign key) if it does!
-  console.log(req.body);
-   return knex('author').where('name', req.body.name).first()
-  .then(name => {
-    if (!name) {
-      return knex('author')
-        .insert({
-          name: req.body.name
-        })
-    }
-  })
-  .then(() => {
-
-    // need to use returning to pass the recipe_id down!
-    // console.log(req.body);
-    return knex('recipe').insert({
-      name:req.body.title,
-      image:req.body.image,
-      description:req.body.description,
-      author_id: knex('author').where('name', req.body.name).select('id')
-    })
-  })
-  .then(() => {
-    //prolly need to keep passing the foreign key down!
-    //major issue! try refactoring this to a for loop, looking at the stec
-    return knex('step').insert({
-      step_number:req.body.step_number,
-      step_body:req.body.step_body,
-      recipe_id: knex('recipe').where('name', req.body.title).first().select('id')
-    })
-  })
-  .then(() => {
-    return knex('ingredient').insert({
-      name:req.body.ingredient,
-      quantity:req.body.quantity
-    })
-  })
-
-  //.then- I need to go to ingredient_recipe!
-  .then(reviews => {
-    // var author = knex('author').where('name', req.body.name);
-    res.status(200).send(reviews)
-  }).catch(err => {
-    res.status(503).send(err.message)
-  })
-});
 
 //also, is there a script line I should be running to see what I am deleting?
 router.delete('/recipe/:id',
@@ -335,7 +324,7 @@ router.delete('/review/:id',
   })
 })
 
-router.delete
+
 
 
 
