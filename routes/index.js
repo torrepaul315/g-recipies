@@ -15,7 +15,8 @@ var knex = require('../db/knex');
 //will need to change naming convention, but yeah
 
 
-// !!!!!home/index page! what we have might work, may need to do overhaul of the averaging one to provide an array object of all recipes and all review averages
+/* !!!!!home/index page! what we have might work, may need to do overhaul of the averaging one to provide an array object of all recipes and all review averages
+*/
 //gets all recipes (for first page)
 // router.get('/recipe', (req,res, next) => {
 //   knex.select('id','name','image').from('recipe')
@@ -44,7 +45,7 @@ router.get('/recipe', (req,res,next) => {
       .join('review','recipe.id','=','review.recipe_id')
       .groupBy('recipe.id')
       .avg('review.rating').as('recipe.avg_rating')
-      
+
       .select('recipe.*')
       // .orderBy('recipe.avg_rating')
       .then(reviews => {
@@ -64,6 +65,10 @@ router.get('/recipe', (req,res,next) => {
 })
 
 /*  !!!!!!!individual recipe page!!!!!!!!!!   */
+
+
+//!!!!!!!!!!!!!!!!!!!!!!!!!add route to add just an author or get all auths!
+
 
 router.get('/recipeAndAuthor/:id',(req,res,next) => {
 
@@ -138,7 +143,7 @@ router.get('/indivRecipeIngred/:id',
 
 
 
-
+///? dont think this is functioning!
 router.get('/review', (req,res, next) => {
   // knex.select('recipe_id', 'rating').from('review').
   knex.select('recipe_id').from('review').groupBy('review.id')
@@ -209,8 +214,8 @@ select avg(`age`) as `a` from `users`
 
 
 
-//
-// router.put
+//the top part of this isn't working yet!
+
 router.post('/review', (req,res,next) => {
   // console.log(req.body);
   knex('author').where('name', req.body.name).select('name')
@@ -253,6 +258,7 @@ a. should prolly split post into 2 separate requests, one for the one to ones an
 3- this also does not take into account quanitity!
 */
 router.post('/recipe', (req,res,next) =>{
+   //need to use the returning a.if the author doesn't exist and b. return the id (to be used as a foreign key) if it does!
   console.log(req.body);
    return knex('author').where('name', req.body.name).first()
   .then(name => {
@@ -261,10 +267,11 @@ router.post('/recipe', (req,res,next) =>{
         .insert({
           name: req.body.name
         })
-
     }
   })
   .then(() => {
+
+    // need to use returning to pass the recipe_id down!
     // console.log(req.body);
     return knex('recipe').insert({
       name:req.body.title,
@@ -274,6 +281,8 @@ router.post('/recipe', (req,res,next) =>{
     })
   })
   .then(() => {
+    //prolly need to keep passing the foreign key down!
+    //major issue! try refactoring this to a for loop, looking at the stec
     return knex('step').insert({
       step_number:req.body.step_number,
       step_body:req.body.step_body,
@@ -282,9 +291,12 @@ router.post('/recipe', (req,res,next) =>{
   })
   .then(() => {
     return knex('ingredient').insert({
-      name:req.body.ingredient
+      name:req.body.ingredient,
+      quantity:req.body.quantity
     })
   })
+
+  //.then- I need to go to ingredient_recipe!
   .then(reviews => {
     // var author = knex('author').where('name', req.body.name);
     res.status(200).send(reviews)
@@ -292,5 +304,41 @@ router.post('/recipe', (req,res,next) =>{
     res.status(503).send(err.message)
   })
 });
+
+//also, is there a script line I should be running to see what I am deleting?
+router.delete('/recipe/:id',
+(req,res,next) => {
+  var recipeId = parseInt(req.params.id);
+
+
+  knex('recipe').where('id',recipeId).del()
+
+  .then((result) => {
+    console.log(result);
+    res.status(204).send()
+  })
+  .catch(err => {
+    res.status(503).send(err.message)
+  })
+})
+
+//this should be all i need for this route I believe!
+router.delete('/review/:id',
+(req,res,next) => {
+  knex('review').where('id',
+  parseInt(req.params.id)).del()
+  .then(() => {
+    res.status(204).send()
+  })
+  .catch(err => {
+    res.status(503).send(err.message)
+  })
+})
+
+router.delete
+
+
+
+
 
 module.exports = router;

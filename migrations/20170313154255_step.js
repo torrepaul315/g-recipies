@@ -4,7 +4,7 @@ exports.up = function(knex, Promise) {
   table.increments('id').primary();
   table.integer('step_number');
   table.text('step_body');
-  table.integer('recipe_id').references('id').inTable('recipe');
+  table.integer('recipe_id').references('id').inTable('recipe').onDelete('CASCADE').onUpdate('CASCADE');
   });
 };
 
