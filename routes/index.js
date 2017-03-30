@@ -37,7 +37,6 @@ router.get('/recipe', (req,res,next) => {
       .join('review','recipe.id','=','review.recipe_id')
       .groupBy('recipe.id')
       .avg('review.rating').as('recipe.avg_rating')
-
       .select('recipe.*')
       // .orderBy('recipe.avg_rating')
       .then(reviews => {
@@ -47,22 +46,20 @@ router.get('/recipe', (req,res,next) => {
       })
     }
     else {
-      // // knex.select('id','name','image').from('recipe')
-      // knex('recipe')
-      // // .join('review','recipe.id','=','review.recipe_id')
-      // .select('recipe.*')
-      // .whereNotExists('recipe.id','=','review.recipe_id')
 
-      // knex('recipe').whereNotExists(knex.select('*').from('review').where('review.recipe_id = recipe.id'))
 
-//       knex('review').whereNotExists(function() {
-//   this.select('*').from('recipe').whereRaw('review.recipe_id = recipe.id');
-// })
+      // // this works, but a lot of nulls!
+      // knex.select('*')
+      // .from('recipe')
+      // .leftJoin('review','recipe.id','review.recipe_id')
+      // .whereNull('recipe_id')
 
-      knex.select('*')
-      .from('recipe')
-      .leftJoin('review','recipe.id','review.recipe_id')
-      .whereNull('review.recipe_id')
+      knex('recipe')
+      .whereNotExists(knex.select('*').from('review').
+      whereRaw('review.recipe_id = recipe.id'))
+
+
+
 
 
 
@@ -410,6 +407,11 @@ router.post('/review', (req,res,next) => {
 
 
 //review this! it works when 'quantity' is there, breaks when it is not- is this the same issue I went over with isaac where the promise chain is not completed?
+router.put('/recipeUpdate', (req,res,next) => {
+  console.log()
+})
+
+
 router.put('/ingredientQuantityUpdate', (req,res,next) => {
   console.log(req.body);
 
