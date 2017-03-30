@@ -17,15 +17,7 @@ var knex = require('../db/knex');
 
 /* !!!!!home/index page! what we have might work, may need to do overhaul of the averaging one to provide an array object of all recipes and all review averages
 */
-//gets all recipes (for first page)
-// router.get('/recipe', (req,res, next) => {
-//   knex.select('id','name','image').from('recipe')
-//   .then(reviews => {
-//     res.send(reviews)
-//   }).catch(err => {
-//     res.status(503).send(err.message)
-//   })
-// });
+
 //generates average review for each recipe
 router.get('/recipeAvgReviewScore/:id', (req, res, next) => {
   knex('review').avg('rating').where('recipe_id',req.params.id)
@@ -55,7 +47,30 @@ router.get('/recipe', (req,res,next) => {
       })
     }
     else {
-      knex.select('id','name','image').from('recipe')
+      // // knex.select('id','name','image').from('recipe')
+      // knex('recipe')
+      // // .join('review','recipe.id','=','review.recipe_id')
+      // .select('recipe.*')
+      // .whereNotExists('recipe.id','=','review.recipe_id')
+
+      // knex('recipe').whereNotExists(knex.select('*').from('review').where('review.recipe_id = recipe.id'))
+
+//       knex('review').whereNotExists(function() {
+//   this.select('*').from('recipe').whereRaw('review.recipe_id = recipe.id');
+// })
+
+      knex.select('*')
+      .from('recipe')
+      .leftJoin('review','recipe.id','review.recipe_id')
+      .whereNull('review.recipe_id')
+
+
+
+
+
+
+      // knex('users').whereNotExists(knex.select('*').from('accounts').whereRaw('users.account_id = accounts.id'))
+
       .then(reviews => {
         res.send(reviews)
       }).catch(err => {
@@ -68,6 +83,20 @@ router.get('/recipe', (req,res,next) => {
 
 
 //!!!!!!!!!!!!!!!!!!!!!!!!!add route to add just an author or get all auths!
+
+router.get('/author/:id',(req,res,next) => {
+  knex('recipe')
+  .join('author', 'recipe.author_id', '=','author.id')
+  .select('author.name')
+  .where('recipe.author_id',req.params.id)
+  .then(author => {
+    res.send(author)
+  }).catch(err => {
+    res.status(503).send(err.message)
+  })
+
+});
+
 
 
 router.get('/recipeAndAuthor/:id',(req,res,next) => {
@@ -116,14 +145,33 @@ router.get('/indivRecipeSteps/:id',      (req,res,next) => {
 })
 
 //!!! need to add in quantity!
+
+
+//test this more....does this give us what we want/need? we won't need to select quantity anyways!
+
+//got some work to do on this one!
 router.get('/indivRecipeIngred/:id',
 (req,res,next) => {
   knex('ingredient_recipe')
   .join('ingredient', 'ingredient_recipe.ingredient_id', '=','ingredient.id')
   .where('ingredient_recipe.recipe_id',req.params.id).select('name','quantity')
 
-  //
-  // .select('ingredient_id').where('recipe_id',req.params.id)
+
+  .then(steps => {
+    res.status(200).send(steps)
+  }).catch(err => {
+    res.status(503).send(err.message)
+  })
+})
+
+//not working!
+router.get('/recipesAssociatedWithIngredient/:id', (req,res,next) => {
+  knex('ingredient')
+  .join('ingredient_recipe','ingredient.id','=','ingredient_recipe.ingredient_id')
+  .where('ingedient_recipe.ingredient_id',req.params.id)
+  .from('ingredient_recipe')
+  // .select('ingredient_recipe.recipe_id')
+
   .then(steps => {
     res.status(200).send(steps)
   }).catch(err => {
@@ -142,12 +190,11 @@ router.get('/indivRecipeIngred/:id',
 
 
 
-
-///? dont think this is functioning!
-router.get('/review', (req,res, next) => {
-  // knex.select('recipe_id', 'rating').from('review').
-  knex.select('recipe_id').from('review').groupBy('review.id')
-  // .avg('review.review')
+//this gets the review info by recipe ID
+router.get('/review/:id', (req,res, next) => {
+  knex('review')
+  .select('body')
+  .where('recipe_id',req.params.id)
   .then(review => {
       // knex().avg('rating').where('recipe_id',req.params.id)
     res.send(review)
@@ -169,9 +216,7 @@ router.get('/averagereview', (req,res, next) => {
 
 
 
-//use a for each?
-  // this gives you back the rating field of the reviews
-  // knex.select('rating').table('review')
+
 
 
   // knex('recipe')
@@ -201,8 +246,40 @@ select avg(`age`) as `a` from `users`
 
 
 //route to get indiv recipe steps for the indiv recipe page
+router.get('/indivSteps/:id', (req,res,next) => {
+  knex('step')
+  .select('step_body')
+  .where('recipe_id',req.params.id)
+  .then(authorId => {
+    res.send(authorId)
+  })
+  .catch(err => {
+    res.status(503).send(err.message)
+  })
+})
 
 
+//get the individual ingredient, and all of the recipe ids+names associated with that !
+router.get('/ingredAndAssRecipes/:id', (req,res,next) => {
+  knex('')
+
+
+
+})
+// knex('ingredient')
+// .join('ingredient_recipe','ingredient.id','=','ingredient_recipe.ingredient_id')
+// .where('ingedient_recipe.ingredient_id',req.params.id)
+
+
+
+
+///a join between ingredient.recipe and recipe! should be the inverse of the 'find all ingredients for this recipe query!'
+
+
+
+router.get('/ingredient/id', (req,res,next) => {
+  knex('ingredient').where('name', req.body.name).select
+})
 //route to get ingredients for indiv recipe
 
 
@@ -298,7 +375,7 @@ router.post('/ingredientAdd', (req,res,next) => {
 
 });
 
-
+//!!!!!!!!!!!!!!need to check this route and make sure that it works!!!!!!!!!!!!!!!!!!!!
 router.post('/review', (req,res,next) => {
   console.log(req.body);
   knex('author').where('name', req.body.name).select('name')
@@ -329,6 +406,69 @@ router.post('/review', (req,res,next) => {
   })
 })
 
+///////////one last post route! create a review by default (so that with at least some rating data, the new recipe will show up if/when the person navigates back to the main page!)
+
+
+//review this! it works when 'quantity' is there, breaks when it is not- is this the same issue I went over with isaac where the promise chain is not completed?
+router.put('/ingredientQuantityUpdate', (req,res,next) => {
+  console.log(req.body);
+
+    knex('ingredient_recipe').where('ingredient_id',
+   parseInt(req.body.ingredient_id)).update({quantity:req.body.quantity,},'quantity')
+   .then(quantity => {
+     res.send(quantity);
+   })
+   .catch(err => {
+     res.status(503).send(err.message)
+   })
+})
+
+router.put('/ingredientUpdate', (req,res,next) => {
+  console.log(req.body);
+    knex('ingredient')
+    .where('id',parseInt(req.body.ingredient_id))
+    .update({
+      name:req.body.name,
+    },'name')
+    .then(name => {
+      res.send(name);
+    })
+    .catch(err => {
+      res.status(503).send(err.message)
+    })
+})
+//should I be referencing the step by it's unique id or step number? hmmmmm!
+router.put('/stepUpdate', (req,res,next) => {
+  knex('step')
+  .where('id',parseInt(req.body.step_id))
+  .update({
+    step_number: req.body.step_number,
+    step_body: req.body.step_body,
+  }, 'step_body')
+  .then((body) => {
+    res.send(body);
+  })
+  .catch(err => {
+    res.status(503).send(err.message)
+  })
+
+})
+//update recipe
+// router.put()
+
+//update author
+
+//edit/update review
+
+
+//
+// })
+// knex('ingredient_recipe').insert({
+//   ingredient_id:ingredId,
+//   recipe_id:recipeId,
+//   quantity:req.body.quantity,
+// })
+
 /*
 new recipe page- almost there!
 1- problem- this is set up to just take one step and one ingredient ergo
@@ -353,6 +493,11 @@ so! work on using the author post route, using returning, and then sending back
 
 
 */
+//route to delete an individual step
+  router.delete('/indivStep/:id', (req,res,next) => {
+    knex('step').where('id',req.params.id).del()
+
+  })
 
 //also, is there a script line I should be running to see what I am deleting?
 router.delete('/recipe/:id',

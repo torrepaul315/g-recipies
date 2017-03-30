@@ -10,6 +10,13 @@ exports.seed = function(knex, Promise) {
         recipe_id:knex('recipe').where('name','beef stew').select('id')},
         {step_number:3, step_body:'be gentle with the carrots',
         recipe_id:knex('recipe').where('name','beef stew').select('id')},
+        {step_number:4, step_body:'filler 1',
+        recipe_id:knex('recipe').where('name','french fries').select('id')},
+        {step_number:5, step_body:'filler 2',
+        recipe_id:knex('recipe').where('name','french fries').select('id')},
+        {step_number:6, step_body:'fillah 3',
+        recipe_id:knex('recipe').where('name','french fries').select('id')},
+
       ]);
     });
 };
