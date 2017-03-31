@@ -1,3 +1,6 @@
+//need routes to - edit a recipe (description etc)and edit a review!
+
+
 var express = require('express');
 var router = express.Router();
 var knex = require('../db/knex');
@@ -58,19 +61,12 @@ router.get('/recipe', (req,res,next) => {
       .whereNotExists(knex.select('*').from('review').
       whereRaw('review.recipe_id = recipe.id'))
 
-
-
-
-
-
-
-
-
       // knex('users').whereNotExists(knex.select('*').from('accounts').whereRaw('users.account_id = accounts.id'))
 
       .then(reviews => {
         res.send(reviews)
       }).catch(err => {
+        console.error(503);
         res.status(503).send(err.message)
       })
     }
@@ -133,7 +129,7 @@ router.get('/recipeAndAuthor/:id',(req,res,next) => {
 });
 
 router.get('/indivRecipeSteps/:id',      (req,res,next) => {
-  knex('step').select('step_number','step_body').where('recipe_id',req.params.id)
+  knex('step').select('step_number','step_body','id').where('recipe_id',req.params.id)
   .then(steps => {
     res.status(200).send(steps)
   }).catch(err => {
@@ -151,7 +147,7 @@ router.get('/indivRecipeIngred/:id',
 (req,res,next) => {
   knex('ingredient_recipe')
   .join('ingredient', 'ingredient_recipe.ingredient_id', '=','ingredient.id')
-  .where('ingredient_recipe.recipe_id',req.params.id).select('name','quantity')
+  .where('ingredient_recipe.recipe_id',req.params.id).select('name','quantity','ingredient_id')
 
 
   .then(steps => {
@@ -190,7 +186,7 @@ router.get('/recipesAssociatedWithIngredient/:id', (req,res,next) => {
 //this gets the review info by recipe ID
 router.get('/review/:id', (req,res, next) => {
   knex('review')
-  .select('body')
+  .select('body','rating','author_id')
   .where('recipe_id',req.params.id)
   .then(review => {
       // knex().avg('rating').where('recipe_id',req.params.id)
@@ -375,27 +371,36 @@ router.post('/ingredientAdd', (req,res,next) => {
 //!!!!!!!!!!!!!!need to check this route and make sure that it works!!!!!!!!!!!!!!!!!!!!
 router.post('/review', (req,res,next) => {
   console.log(req.body);
-  knex('author').where('name', req.body.name).select('name')
+  knex('author').where('name', req.body.name).select('*')
     .then(user => {
-      console.log(user[0].name);
-      if (!user) {
+      console.log(user.length);
+      if (user.length > 0) {
+        console.log(user);
+        console.log(user[0].id);
+      return [user.id];
+      }
+      else {
         return knex('author')
           .returning('id')
           .insert({name: req.body.name,
           })
+          console.log(name)
       }
     })
-    .then((authorIds) => {
-      console.log(authorIds)
-    })
+    .then((authorIds) =>
+      authorIds[0]
+    )
     .then(authorId => {
-    knex('review').insert({
+    knex('review')
+    .returning('*')
+    .insert({
       body:req.body.body,
       rating:req.body.rating,
       recipe_id:req.body.recipe_id,
       author_id:authorId,
     }).then(newReview => {
       // var author = knex('author').where('name', req.body.name);
+      console.log(newReview);
       res.status(200).send(newReview)
     }).catch(err => {
       res.status(503).send(err.message)
@@ -463,38 +468,12 @@ router.put('/stepUpdate', (req,res,next) => {
 //edit/update review
 
 
-//
-// })
-// knex('ingredient_recipe').insert({
-//   ingredient_id:ingredId,
-//   recipe_id:recipeId,
-//   quantity:req.body.quantity,
-// })
-
-/*
-new recipe page- almost there!
-1- problem- this is set up to just take one step and one ingredient ergo
-a. should prolly split post into 2 separate requests, one for the one to ones and a second post to handle steps and ingredients
-
-2- this post does not add anything to the ingredient_recipe join table!
-
-3- this also does not take into account quanitity!
-
-4- from isaac
-modularize your routes! no big honker of a post request
-
-do a 'post chain' ie
-one, have separate routes to insert into each basic table
-each route returns back to the front end
-you generally only want to insert into one table at a time!
-
-go to author- if exists great- send back author id.  if it doesn't exist, insert new author, send back id
-
-.returning
-so! work on using the author post route, using returning, and then sending back
 
 
-*/
+
+
+
+
 //route to delete an individual step
   router.delete('/indivStep/:id', (req,res,next) => {
     knex('step').where('id',req.params.id).del()
@@ -531,15 +510,7 @@ router.delete('/review/:id',
   })
 })
 
-// router.delete('/step/:id',
-// (req,res,next) => {
-//   knex('step').where('id',
-//   parseInt(req.params.id)).del()
-//   .then(())
-//
-//
-//
-// })
+
 
 
 
