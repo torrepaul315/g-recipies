@@ -186,7 +186,7 @@ router.get('/recipesAssociatedWithIngredient/:id', (req,res,next) => {
 //this gets the review info by recipe ID
 router.get('/review/:id', (req,res, next) => {
   knex('review')
-  .select('body','rating','author_id')
+  .select('body','rating','author_id','id')
   .where('recipe_id',req.params.id)
   .then(review => {
       // knex().avg('rating').where('recipe_id',req.params.id)
